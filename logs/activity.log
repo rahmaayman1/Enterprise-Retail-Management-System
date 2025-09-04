@@ -1,0 +1,50 @@
+[2025-08-19T19:15:41.206Z] [ERROR]: Login failed: Cannot destructure property 'email' of 'req.body' as it is undefined.
+[2025-08-19T19:24:47.715Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T19:40:51.492Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T19:41:53.743Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T19:43:21.171Z] [ERROR]: Registration failed: Illegal arguments: undefined, number
+[2025-08-19T19:46:20.406Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T19:49:20.767Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T20:23:26.814Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T20:28:40.790Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T20:31:28.398Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T20:34:49.841Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T20:39:56.186Z] [ERROR]: Registration failed: Illegal arguments: undefined, number
+[2025-08-19T20:40:13.038Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-19T20:40:23.894Z] [ERROR]: Registration failed: Illegal arguments: undefined, number
+[2025-08-21T03:01:32.383Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:06:00.737Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:09:05.901Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:16:11.896Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:24:58.949Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:30:10.346Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:31:47.878Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:52:01.986Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:53:12.741Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:53:43.306Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T03:54:38.249Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T04:04:00.555Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T04:58:25.613Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T04:59:07.571Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T05:08:34.396Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T05:15:44.132Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-21T05:16:55.403Z] [ERROR]: Registration failed: Illegal arguments: undefined, number
+[2025-08-22T20:09:22.209Z] [ERROR]: Registration failed: Illegal arguments: undefined, number
+[2025-08-22T20:09:49.037Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-22T22:55:51.317Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-22T22:56:42.739Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-22T23:02:56.898Z] [ERROR]: Registration failed: Illegal arguments: undefined, number
+[2025-08-22T23:10:09.217Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-22T23:13:33.411Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-22T23:16:53.858Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-22T23:18:07.071Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-22T23:21:50.080Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-22T23:24:03.251Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-22T23:27:22.014Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-23T20:57:49.651Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-23T21:02:19.754Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-23T21:02:22.764Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-23T21:55:58.552Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-23T21:56:11.679Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required., name: Path `name` is required.
+[2025-08-23T21:56:35.010Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-08-25T23:12:58.347Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
