@@ -95,4 +95,4 @@ This project aims to enhance **business efficiency, data accuracy, and decision-
 1. **Clone the Repository**
    ```bash
    git clone https://github.com/rahmaayman1/Enterprise-Retail-Management-System.git
-   cd retail-management-system
+   cd Enterprise-Retail-Management-System
