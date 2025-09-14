@@ -5,7 +5,6 @@ const { createBackup, downloadBackup } = require('../controllers/backupControlle
 const authenticateToken = require('../middleware/authMiddleware');
 const authorizeRoles = require('../middleware/roleMiddleware');
 
-// ✅ إنشاء نسخة جديدة
 router.post(
   '/create',
   authenticateToken,
@@ -13,7 +12,6 @@ router.post(
   createBackup
 );
 
-// ✅ تحميل نسخة موجودة
 router.get(
   '/download/:filename',
   authenticateToken,

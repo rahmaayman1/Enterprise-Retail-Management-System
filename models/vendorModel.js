@@ -9,7 +9,7 @@ const vendorSchema = new Schema({
   address: String,
   contactPerson: String,
   taxNumber: String,
-  openingBalance: { type: Number, default: 0 }, // (دائن +)
+  openingBalance: { type: Number, default: 0 }, 
   isActive: { type: Boolean, default: true },
   notes: String
 }, { timestamps: true });

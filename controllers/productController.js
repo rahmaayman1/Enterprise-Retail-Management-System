@@ -1,6 +1,6 @@
 const Product = require('../models/productModel');
 
-// جلب كل المنتجات
+// get all products
 const getAll = async (req, res) => {
   try {
     const products = await Product.find();
@@ -11,7 +11,7 @@ const getAll = async (req, res) => {
   }
 };
 
-// جلب منتج بالـ ID
+// get product by ID
 const getById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -19,14 +19,14 @@ const getById = async (req, res) => {
     res.status(200).json(product);
   } catch (error) {
     console.error('Error fetching product:', error.message);
-    if (error.kind === 'ObjectId') {  // خطأ في صيغة الـ ID
+    if (error.kind === 'ObjectId') {  
       return res.status(400).json({ message: 'Invalid product ID' });
     }
     res.status(500).json({ message: 'Server error fetching product' });
   }
 };
 
-// إنشاء منتج جديد
+// Create new product
 const create = async (req, res) => {
   try {
     const product = new Product(req.body);
@@ -38,7 +38,7 @@ const create = async (req, res) => {
   }
 };
 
-// تحديث منتج بالـ ID
+// update product
 const update = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
@@ -57,7 +57,7 @@ const update = async (req, res) => {
   }
 };
 
-// حذف منتج بالـ ID
+// delete product by ID
 const remove = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);

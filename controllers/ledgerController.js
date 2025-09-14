@@ -1,5 +1,5 @@
 const Ledger = require('../models/ledgerModel');
-const Customer = require('../models/customerModel'); // لو هنعمل populate لاسم العميل
+const Customer = require('../models/customerModel'); 
 
 // GET all ledgers (filters + search + pagination)
 const getAll = async (req, res) => {
@@ -8,17 +8,17 @@ const getAll = async (req, res) => {
 
     const filter = {};
 
-    // فلترة حسب النوع
+    // Filter by type
     if (type) filter.type = type;
 
-    // فلترة حسب التاريخ
+    // Filter by date
     if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate) filter.createdAt.$gte = new Date(startDate);
       if (endDate) filter.createdAt.$lte = new Date(new Date(endDate).setHours(23, 59, 59));
     }
 
-    // البحث النصي
+    // text search
     if (search) {
       filter.$or = [
         { description: { $regex: search, $options: 'i' } },
@@ -30,7 +30,7 @@ const getAll = async (req, res) => {
     const total = await Ledger.countDocuments(filter);
 
     const ledgers = await Ledger.find(filter)
-      .populate('customer', 'name') // لو عندك علاقة Customer
+      .populate('customer', 'name') 
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit));
@@ -67,7 +67,7 @@ const create = async (req, res) => {
       amount,
       description,
       reference,
-      customer, // اختياري، لو مرتبط بعميل
+      customer, 
       createdBy: req.user.id,
     });
 

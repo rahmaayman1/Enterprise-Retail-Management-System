@@ -1,6 +1,6 @@
 const Sale = require('../models/saleModel');
 const Product = require('../models/productModel');
-const Customer = require('../models/customerModel'); // لو عندك عملاء مرتبطين بالمبيعات
+const Customer = require('../models/customerModel'); 
 
 // GET all sales
 const getAll = async (req, res) => {
@@ -8,7 +8,7 @@ const getAll = async (req, res) => {
     const sales = await Sale.find()
       .populate('items.productId', 'name price')
       .populate('customer', 'name')
-      .sort({ createdAt: -1 }); // أحدث المبيعات أولاً
+      .sort({ createdAt: -1 }); 
     res.json(sales);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -33,11 +33,10 @@ const create = async (req, res) => {
   try {
     const { items, customer, paymentMethod, notes } = req.body;
 
-    // التأكد من وجود المنتجات وصلاحية البيانات
     for (let item of items) {
       const product = await Product.findById(item.productId);
       if (!product) return res.status(404).json({ message: `Product not found: ${item.productId}` });
-      // تحديث المخزون
+      // Update inventory
       if (product.stock < item.quantity) {
         return res.status(400).json({ message: `Insufficient stock for product: ${product.name}` });
       }
@@ -88,7 +87,6 @@ const remove = async (req, res) => {
     const deletedSale = await Sale.findByIdAndDelete(req.params.id);
     if (!deletedSale) return res.status(404).json({ message: 'Sale not found' });
 
-    // استرجاع المخزون عند حذف عملية البيع
     for (let item of deletedSale.items) {
       const product = await Product.findById(item.productId);
       if (product) {

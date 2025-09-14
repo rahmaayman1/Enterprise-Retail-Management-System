@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const backupService = require('../services/backupService');
 
-// ✅ لإنشاء نسخة جديدة
+// create new backup
 const createBackup = async (req, res) => {
   try {
     const filePath = await backupService();
@@ -15,7 +15,7 @@ const createBackup = async (req, res) => {
   }
 };
 
-// ✅ لتحميل نسخة موجودة
+// download existing backup
 const downloadBackup = (req, res) => {
   const { filename } = req.params;
   const filePath = path.join(__dirname, '..', 'backups', filename);

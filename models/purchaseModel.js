@@ -5,7 +5,7 @@ const purchaseItemSchema = new Schema({
   product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
   qty: { type: Number, required: true, min: 1 },
   unitCost: { type: Number, required: true, min: 0 },
-  discount: { type: Number, default: 0, min: 0 }, // خصم على السطر
+  discount: { type: Number, default: 0, min: 0 }, 
   taxRate: { type: Number, default: 0 }, // %
   batchNo: { type: String, trim: true },
   expiryDate: Date

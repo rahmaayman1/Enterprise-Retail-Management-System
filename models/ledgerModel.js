@@ -4,22 +4,20 @@ const { Schema } = mongoose;
 const ledgerSchema = new Schema({
   branch: { type: Schema.Types.ObjectId, ref: 'Branch', required: true },
 
-  // نوع الحساب
   accountType: { 
     type: String, 
     enum: ['VENDOR','CUSTOMER','CASH','BANK','EXPENSE','REVENUE','OTHER'], 
     required: true 
   },
-  accountRef: { type: Schema.Types.ObjectId }, // Vendor/Customer/... (حسب accountType)
+  accountRef: { type: Schema.Types.ObjectId }, 
 
   date: { type: Date, default: Date.now },
   description: String,
 
-  // المبالغ: debit/credit
+  //debit/credit
   debit: { type: Number, default: 0, min: 0 },
   credit: { type: Number, default: 0, min: 0 },
 
-  // ربط القيد بمصدره (فاتورة بيع/شراء/سداد…)
   refType: { type: String, enum: ['Purchase','Sale','Payment','Receipt','Adjustment','Opening'] },
   refId: { type: Schema.Types.ObjectId },
 

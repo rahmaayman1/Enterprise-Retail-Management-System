@@ -16,14 +16,14 @@ const stockMovementSchema = new Schema({
   },
 
   qty: { type: Number, required: true, min: 0.000001 },
-  unitCost: { type: Number, default: 0, min: 0 }, // مفيد لتكلفة المخزون
+  unitCost: { type: Number, default: 0, min: 0 }, 
   batchNo: { type: String, trim: true },
   expiryDate: Date,
 
   refType: { type: String, enum: ['Purchase','Sale','Manual','Transfer','Adjustment','Return'] },
-  refId: { type: Schema.Types.ObjectId }, // id للفاتورة/المستند
+  refId: { type: Schema.Types.ObjectId }, 
 
-  beforeQty: { type: Number, min: 0 }, // اختياري لو بتخزّني رصيد لحظي
+  beforeQty: { type: Number, min: 0 }, 
   afterQty: { type: Number, min: 0 },
 
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },

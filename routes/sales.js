@@ -8,7 +8,6 @@ const { body, param } = require('express-validator');
 
 const saleController = require('../controllers/saleController');
 
-// Cashier يقدر يعمل مبيعات
 router.get(
   '/',
   authenticateToken,

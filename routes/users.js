@@ -8,7 +8,6 @@ const { body, param } = require('express-validator');
 
 const userController = require('../controllers/userController');
 
-// Admin بس اللي يدير المستخدمين
 router.get(
   '/',
   authenticateToken,

@@ -1,14 +1,14 @@
 const Purchase = require('../models/purchaseModel');
-const Vendor = require('../models/vendorModel'); // لو عندك Model للمورد
+const Vendor = require('../models/vendorModel'); 
 const Product = require('../models/productModel');
 
 // GET all purchases
 const getAll = async (req, res) => {
   try {
     const purchases = await Purchase.find()
-      .populate('vendor', 'name')      // يظهر اسم المورد
-      .populate('items.productId', 'name price') // يظهر اسم وسعر المنتج
-      .sort({ createdAt: -1 });        // أحدث العمليات أولاً
+      .populate('vendor', 'name')      
+      .populate('items.productId', 'name price') 
+      .sort({ createdAt: -1 });        
     res.json(purchases);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -35,11 +35,9 @@ const create = async (req, res) => {
   try {
     const { vendorId, items, notes } = req.body;
 
-    // التأكد من وجود المورد
     const vendor = await Vendor.findById(vendorId);
     if (!vendor) return res.status(404).json({ message: 'Vendor not found' });
 
-    // التأكد من وجود المنتجات وصلاحية البيانات
     for (let item of items) {
       const product = await Product.findById(item.productId);
       if (!product) return res.status(404).json({ message: `Product not found: ${item.productId}` });
@@ -49,7 +47,7 @@ const create = async (req, res) => {
       vendor: vendorId,
       items,
       notes,
-      createdBy: req.user.id, // تتبع من أضاف العملية
+      createdBy: req.user.id, 
     });
 
     const savedPurchase = await purchase.save();

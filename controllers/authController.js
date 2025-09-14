@@ -1,3 +1,4 @@
+//authController
 const User = require("../models/userModel");
 const bcrypt=require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -8,13 +9,13 @@ const generateToken = (user) => {
     { 
       id: user._id,
       email: user.email,
-      role: user.role  // ✅ إضافة الـ role
+      role: user.role  
     }, 
     process.env.JWT_SECRET, 
     { expiresIn: "30d" }
   );
 };
-// تسجيل مستخدم جديد
+// register new user
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -55,7 +56,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// تسجيل الدخول
+// login
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;

@@ -1,6 +1,6 @@
 const Category = require('../models/categoryModel');
 
-// جلب كل الفئات
+// get all categories
 const getAll = async (req, res) => {
     try {
         const categories = await Category.find();
@@ -10,7 +10,7 @@ const getAll = async (req, res) => {
     }
 };
 
-// جلب فئة حسب ID
+// get the category by ID 
 const getById = async (req, res) => {
     try {
         const category = await Category.findById(req.params.id);
@@ -21,7 +21,7 @@ const getById = async (req, res) => {
     }
 };
 
-// إضافة فئة جديدة
+// add new category
 const create = async (req, res) => {
     try {
         const existing = await Category.findOne({ name: req.body.name });
@@ -34,7 +34,7 @@ const create = async (req, res) => {
     }
 };
 
-// تعديل فئة
+//edit category
 const update = async (req, res) => {
     try {
         const updatedCategory = await Category.findByIdAndUpdate(
@@ -49,7 +49,7 @@ const update = async (req, res) => {
     }
 };
 
-// حذف فئة
+// delete
 const remove = async (req, res) => {
     try {
         const deletedCategory = await Category.findByIdAndDelete(req.params.id);

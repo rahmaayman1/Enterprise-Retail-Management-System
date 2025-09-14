@@ -11,8 +11,8 @@ const productSchema = new Schema({
   costPrice: { type: Number, required: true, min: 0 },
   salePrice: { type: Number, required: true, min: 0 },
   taxRate: { type: Number, default: 0 }, // %
-  expiryTracking: { type: Boolean, default: false }, // لو المنتج له صلاحية
-  reorderLevel: { type: Number, default: 0, min: 0 }, // تنبيه مخزون منخفض
+  expiryTracking: { type: Boolean, default: false }, 
+  reorderLevel: { type: Number, default: 0, min: 0 }, //low stock alert
   isActive: { type: Boolean, default: true },
   description: String
 }, { timestamps: true });

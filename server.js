@@ -12,7 +12,7 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 
-// استدعاء الـ routes
+//routes
 const authRoutes = require('./routes/auth');
 const backupRoutes = require('./routes/backup');
 const branchesRoutes = require('./routes/branches');
@@ -26,7 +26,7 @@ const stockMovementsRoutes = require('./routes/stockMovements');
 const usersRoutes = require('./routes/users');
 const vendorsRoutes = require('./routes/vendors');
 
-// ربط الـ routes مع مساراتها
+//Link routes to its paths
 app.use('/api/auth', authRoutes);
 app.use('/api/backup', backupRoutes);
 app.use('/api/branches', branchesRoutes);

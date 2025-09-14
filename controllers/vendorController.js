@@ -1,7 +1,7 @@
 const Vendor = require('../models/vendorModel');
 const logger = require('../utils/logger');
 
-// جلب كل الموردين
+//Get all vendor
 const getAll = async (req, res) => {
   try {
     const vendors = await Vendor.find();
@@ -11,7 +11,7 @@ const getAll = async (req, res) => {
   }
 };
 
-// جلب مورد بالـ ID
+// Get vendor by ID
 const getById = async (req, res) => {
   try {
     const vendor = await Vendor.findById(req.params.id);
@@ -22,7 +22,7 @@ const getById = async (req, res) => {
   }
 };
 
-// إنشاء مورد جديد
+//Create vendor
 const create = async (req, res) => {
   try {
     const { name, phone, email, address, taxNumber, openingBalance } = req.body;
@@ -39,7 +39,7 @@ const create = async (req, res) => {
   }
 };
 
-// تعديل مورد
+// update vendor
 const update = async (req, res) => {
   try {
     const vendor = await Vendor.findById(req.params.id);
@@ -55,7 +55,7 @@ const update = async (req, res) => {
   }
 };
 
-// حذف مورد
+//delete vendor
 const remove = async (req, res) => {
   try {
     const vendor = await Vendor.findById(req.params.id);

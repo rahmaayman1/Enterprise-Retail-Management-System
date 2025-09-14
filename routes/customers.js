@@ -8,7 +8,6 @@ const { body, param } = require('express-validator');
 
 const customerController = require('../controllers/customerController');
 
-// Cashier يقدر يقرأ ويضيف ويحدّث بيانات العميل (بدون حذف)
 router.get(
   '/',
   authenticateToken,

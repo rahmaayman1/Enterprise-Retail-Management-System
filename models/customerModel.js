@@ -2,13 +2,13 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const customerSchema = new Schema({
-  code: { type: String, trim: true, sparse: true }, // اختياري
+  code: { type: String, trim: true, sparse: true }, 
   name: { type: String, required: true, trim: true, index: true },
   phone: { type: String, trim: true, index: true, sparse: true },
   email: { type: String, trim: true, lowercase: true, sparse: true },
   address: String,
   taxNumber: String,
-  openingBalance: { type: Number, default: 0 }, // رصيد افتتاحي (مدين +)
+  openingBalance: { type: Number, default: 0 }, 
   isActive: { type: Boolean, default: true },
   notes: String
 }, { timestamps: true });

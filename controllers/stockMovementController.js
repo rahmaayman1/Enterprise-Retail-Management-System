@@ -1,7 +1,7 @@
 const StockMovement = require('../models/stockMovementModel');
 const Product = require('../models/productModel');
 
-// جلب كل الحركات
+// Get all stockMovement
 const getAll = async (req, res) => {
   try {
     const movements = await StockMovement.find()
@@ -13,7 +13,7 @@ const getAll = async (req, res) => {
   }
 };
 
-// جلب حركة معينة بالـ ID
+// Get stockMovement by ID
 const getById = async (req, res) => {
   try {
     const movement = await StockMovement.findById(req.params.id)
@@ -25,7 +25,7 @@ const getById = async (req, res) => {
   }
 };
 
-// إضافة حركة جديدة (IN أو OUT)
+// create stockMovement(IN/OUT)
 const create = async (req, res) => {
   try {
     const { productId, type, quantity, notes } = req.body;
@@ -33,7 +33,6 @@ const create = async (req, res) => {
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    // تحديث المخزون حسب نوع الحركة
     if (type === 'IN') {
       product.stock += quantity;
     } else if (type === 'OUT') {
@@ -60,14 +59,13 @@ const create = async (req, res) => {
   }
 };
 
-// تعديل حركة المخزون
+//modify stockMovement
 const update = async (req, res) => {
   try {
     const { quantity, notes } = req.body;
     const movement = await StockMovement.findById(req.params.id);
     if (!movement) return res.status(404).json({ message: 'Movement not found' });
 
-    // تعديل المخزون لو الكمية اتغيرت
     if (quantity && quantity !== movement.quantity) {
       const product = await Product.findById(movement.productId);
       if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -95,7 +93,7 @@ const update = async (req, res) => {
   }
 };
 
-// حذف حركة المخزون
+// delete stockMovement
 const remove = async (req, res) => {
   try {
     const movement = await StockMovement.findById(req.params.id);
@@ -104,7 +102,6 @@ const remove = async (req, res) => {
     const product = await Product.findById(movement.productId);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    // استرجاع المخزون عند حذف الحركة
     if (movement.type === 'IN') {
       if (product.stock < movement.quantity) {
         return res.status(400).json({ message: 'Cannot delete IN movement, stock too low' });

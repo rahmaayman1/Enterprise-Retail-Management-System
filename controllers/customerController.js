@@ -1,6 +1,6 @@
 const Customer = require('../models/customerModel');
 
-// جلب كل العملاء
+// Get all customers
 const getAll = async (req, res) => {
     try {
         const customers = await Customer.find();

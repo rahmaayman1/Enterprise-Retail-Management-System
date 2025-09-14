@@ -4,7 +4,7 @@ const sendEmail = require('../services/emailService');
 const logger = require('../utils/logger');
 const bcrypt=require("bcrypt");
 
-// ------------------- جلب كل المستخدمين -------------------
+//Get All users
 const getAll = async (req, res) => {
     try {
         const users = await User.find().select('-passwordHash');
@@ -15,7 +15,7 @@ const getAll = async (req, res) => {
     }
 };
 
-// ------------------- جلب مستخدم بالـ ID -------------------
+//Get user by ID
 const getById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-passwordHash');
@@ -27,7 +27,7 @@ const getById = async (req, res) => {
     }
 };
 
-// ------------------- إنشاء مستخدم -------------------
+//Create new user
 const create = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
@@ -82,7 +82,7 @@ const update = async (req, res) => {
     }
 };
 
-// ------------------- حذف مستخدم -------------------
+//delete user
 const remove = async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);

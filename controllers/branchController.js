@@ -1,6 +1,6 @@
 const Branch = require('../models/branchModel');
 
-// جلب كل الفروع
+// get all branches
 const getAll = async (req, res) => {
     try {
         const branches = await Branch.find();
@@ -23,7 +23,7 @@ const getById = async (req, res) => {
     }
 };
 
-// إضافة فرع جديد
+// add new branch
 const create = async (req, res) => {
     try {
         const branch = await Branch.create(req.body);
@@ -33,7 +33,7 @@ const create = async (req, res) => {
     }
 };
 
-// تعديل فرع
+// edit branch
 const update = async (req, res) => {
     try {
         const updatedBranch = await Branch.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -43,7 +43,7 @@ const update = async (req, res) => {
     }
 };
 
-// حذف فرع
+// delete branch
 const remove = async (req, res) => {
     try {
         await Branch.findByIdAndDelete(req.params.id);

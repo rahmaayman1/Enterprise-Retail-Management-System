@@ -5,9 +5,9 @@ const saleItemSchema = new Schema({
   product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
   qty: { type: Number, required: true, min: 1 },
   unitPrice: { type: Number, required: true, min: 0 },
-  unitCostAtSale: { type: Number, required: true, min: 0 }, // لتقرير الربح
-  discount: { type: Number, default: 0, min: 0 }, // خصم على السطر
-  taxRate: { type: Number, default: 0 } // %
+  unitCostAtSale: { type: Number, required: true, min: 0 }, 
+  discount: { type: Number, default: 0, min: 0 }, 
+  taxRate: { type: Number, default: 0 } 
 }, { _id: false });
 
 const saleSchema = new Schema({
