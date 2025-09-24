@@ -13,117 +13,119 @@ import {
   Calculator,
   Percent,
   Save,
-  X
+  X,
+  AlertCircle,
+  RefreshCw,
+  Clock,
+  CheckCircle
 } from 'lucide-react';
 
-// Simulated API services
-const productService = {
-  getAllProducts: () => Promise.resolve([
-    { _id: '1', name: 'Samsung Galaxy S21', price: 25000, stock: 50, barcode: '1234567890123', category: 'Electronics' },
-    { _id: '2', name: 'iPhone 13 Pro', price: 45000, stock: 25, barcode: '1234567890124', category: 'Electronics' },
-    { _id: '3', name: 'Dell Laptop XPS 13', price: 85000, stock: 3, barcode: '1234567890125', category: 'Computers' },
-    { _id: '4', name: 'Apple AirPods Pro', price: 15000, stock: 30, barcode: '1234567890126', category: 'Accessories' },
-    { _id: '5', name: 'Sony Headphones', price: 8000, stock: 20, barcode: '1234567890127', category: 'Accessories' },
-    { _id: '6', name: 'MacBook Pro M1', price: 125000, stock: 8, barcode: '1234567890128', category: 'Computers' }
-  ]),
-  searchProducts: (query) => {
-    return productService.getAllProducts().then(products => 
-      products.filter(product =>
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.barcode.includes(query)
-      )
-    );
-  }
-};
-
-const salesService = {
-  processSale: (saleData) => Promise.resolve({
-    ...saleData,
-    _id: Date.now().toString(),
-    invoiceNumber: `INV-${Date.now()}`,
-    timestamp: new Date().toISOString()
-  }),
-  holdTransaction: (saleData) => Promise.resolve({
-    ...saleData,
-    _id: Date.now().toString(),
-    status: 'held'
-  })
-};
-
-const customerService = {
-  searchCustomers: (query) => Promise.resolve([
-    { _id: '1', name: 'Ahmed Hassan', phone: '01012345678' },
-    { _id: '2', name: 'Sara Mohamed', phone: '01087654321' },
-    { _id: '3', name: 'Mohamed Ali', phone: '01098765432' }
-  ])
-};
+// Import real services
+import { productService } from '../services/productService';
+import { salesService } from '../services/salesService';
+import { customerService } from '../services/customerService';
+import { stockMovementsService } from '../services/stockmovementService';
 
 const SalesPOSPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [cart, setCart] = useState([]);
-  const [customer, setCustomer] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customers, setCustomers] = useState([]);
+  const [showCustomerSearch, setShowCustomerSearch] = useState(false);
   const [discount, setDiscount] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [discountType, setDiscountType] = useState('percentage'); // percentage or fixed
+  const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [amountPaid, setAmountPaid] = useState(0);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [heldTransactions, setHeldTransactions] = useState([]);
+  const [error, setError] = useState(null);
+  const [lastSaleInfo, setLastSaleInfo] = useState(null);
 
   useEffect(() => {
     fetchProducts();
+    loadHeldTransactions();
   }, []);
 
   useEffect(() => {
     filterProducts();
   }, [searchTerm, products]);
 
+  useEffect(() => {
+    if (customerSearch.length > 2) {
+      searchCustomers();
+    } else {
+      setCustomers([]);
+    }
+  }, [customerSearch]);
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await productService.getAllProducts();
-      setProducts(data);
-      setFilteredProducts(data);
+      setProducts(Array.isArray(data) ? data : []);
+      setFilteredProducts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching products:', err);
+      setError('Failed to load products');
+      setProducts([]);
+      setFilteredProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filterProducts = async () => {
+  const searchCustomers = async () => {
+    try {
+      const data = await customerService.searchCustomers(customerSearch);
+      setCustomers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error searching customers:', err);
+      setCustomers([]);
+    }
+  };
+
+  const filterProducts = () => {
     if (searchTerm.trim() === '') {
       setFilteredProducts(products);
     } else {
-      try {
-        const filtered = await productService.searchProducts(searchTerm);
-        setFilteredProducts(filtered);
-      } catch (err) {
-        console.error('Error searching products:', err);
-      }
+      const filtered = products.filter(product =>
+        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.barcode?.includes(searchTerm)
+      );
+      setFilteredProducts(filtered);
     }
   };
 
   const addToCart = (product) => {
-    if (product.stock <= 0) {
+    if (!product.quantity || product.quantity <= 0) {
       alert('Product is out of stock!');
       return;
     }
 
     const existingItem = cart.find(item => item._id === product._id);
     if (existingItem) {
-      if (existingItem.quantity >= product.stock) {
+      if (existingItem.cartQuantity >= product.quantity) {
         alert('Cannot add more items. Stock limit reached!');
         return;
       }
       setCart(cart.map(item => 
         item._id === product._id 
-          ? { ...item, quantity: item.quantity + 1 }
+          ? { ...item, cartQuantity: item.cartQuantity + 1 }
           : item
       ));
     } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
+      setCart([...cart, { 
+        ...product, 
+        cartQuantity: 1,
+        unitPrice: product.salePrice,
+        unitCost: product.costPrice
+      }]);
     }
   };
 
@@ -134,13 +136,13 @@ const SalesPOSPage = () => {
     }
     
     const product = products.find(p => p._id === id);
-    if (product && newQuantity > product.stock) {
+    if (product && newQuantity > product.quantity) {
       alert('Cannot exceed available stock!');
       return;
     }
 
     setCart(cart.map(item => 
-      item._id === id ? { ...item, quantity: newQuantity } : item
+      item._id === id ? { ...item, cartQuantity: newQuantity } : item
     ));
   };
 
@@ -150,25 +152,38 @@ const SalesPOSPage = () => {
 
   const clearCart = () => {
     setCart([]);
-    setCustomer('');
+    setSelectedCustomer(null);
+    setCustomerSearch('');
     setDiscount(0);
     setAmountPaid(0);
+    setShowCustomerSearch(false);
+    setLastSaleInfo(null);
   };
 
   const calculateSubtotal = () => {
-    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return cart.reduce((sum, item) => sum + (item.unitPrice * item.cartQuantity), 0);
   };
 
   const calculateDiscountAmount = () => {
-    return (calculateSubtotal() * discount) / 100;
+    if (discountType === 'percentage') {
+      return (calculateSubtotal() * discount) / 100;
+    } else {
+      return discount;
+    }
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() - calculateDiscountAmount();
+    return Math.max(0, calculateSubtotal() - calculateDiscountAmount());
   };
 
   const calculateChange = () => {
     return Math.max(0, amountPaid - calculateTotal());
+  };
+
+  const generateInvoiceNumber = () => {
+    const timestamp = Date.now().toString();
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `INV-${timestamp.slice(-8)}-${random}`;
   };
 
   const processSale = async () => {
@@ -177,31 +192,89 @@ const SalesPOSPage = () => {
       return;
     }
     
-    if (paymentMethod === 'cash' && amountPaid < calculateTotal()) {
+    if (paymentMethod === 'CASH' && amountPaid < calculateTotal()) {
       alert('Insufficient payment amount!');
       return;
     }
 
     const saleData = {
-      items: cart,
-      customer: customer,
-      subtotal: calculateSubtotal(),
-      discount: discount,
-      discountAmount: calculateDiscountAmount(),
-      total: calculateTotal(),
+      // Required fields based on schema
+      invoiceNo: generateInvoiceNumber(),
+      customer: selectedCustomer?._id || null,
+      date: new Date().toISOString(),
+      
+      // Items array matching schema
+      items: cart.map(item => ({
+        product: item._id,
+        qty: item.cartQuantity,
+        unitPrice: item.unitPrice,
+        unitCostAtSale: item.unitCost || item.costPrice,
+        discount: 0, // Item level discount if needed
+        taxRate: 0   // Item level tax if needed
+      })),
+
+      // Totals
+      subTotal: calculateSubtotal(),
+      discountTotal: calculateDiscountAmount(),
+      taxTotal: 0, // Add tax calculation if needed
+      shipping: 0,
+      grandTotal: calculateTotal(),
+
+      // Payment info
       paymentMethod: paymentMethod,
+      paymentStatus: 'PAID',
+      status: 'POSTED',
+
+      // Additional data for frontend use
       amountPaid: amountPaid,
       change: calculateChange(),
-      timestamp: new Date().toISOString()
+      discountPercentage: discountType === 'percentage' ? discount : 0,
+      discountFixed: discountType === 'fixed' ? discount : 0
     };
 
     try {
       setProcessing(true);
-      const result = await salesService.processSale(saleData);
-      alert(`Sale processed successfully! Invoice: ${result.invoiceNumber}`);
+      setError(null);
+      
+      const result = await salesService.createSale(saleData);
+      
+      // Update product stock by creating stock movements
+      for (const item of cart) {
+        try {
+          await stockMovementsService.createMovement({
+            product: item._id,
+            direction: 'OUT',
+            reason: 'SALE',
+            qty: item.cartQuantity,
+            unitCost: item.unitCost || item.costPrice,
+            refType: 'Sale',
+            refId: result._id,
+            beforeQty: item.quantity,
+            afterQty: item.quantity - item.cartQuantity,
+            notes: `Sale: ${result.invoiceNo}`
+          });
+        } catch (stockErr) {
+          console.warn('Failed to create stock movement for product:', item._id, stockErr);
+        }
+      }
+
+      setLastSaleInfo({
+        invoiceNumber: result.invoiceNo || saleData.invoiceNo,
+        total: calculateTotal(),
+        change: calculateChange(),
+        customer: selectedCustomer?.name || 'Walk-in Customer',
+        timestamp: new Date().toLocaleString()
+      });
+
+      alert(`Sale processed successfully!\nInvoice: ${result.invoiceNo || saleData.invoiceNo}\nTotal: ₦${calculateTotal().toLocaleString()}`);
+      
       clearCart();
+      await fetchProducts(); // Refresh products to update stock levels
+      
     } catch (error) {
-      alert('Failed to process sale: ' + error.message);
+      console.error('Sale processing error:', error);
+      setError('Failed to process sale: ' + (error.message || 'Unknown error'));
+      alert('Failed to process sale: ' + (error.message || 'Please try again'));
     } finally {
       setProcessing(false);
     }
@@ -214,21 +287,63 @@ const SalesPOSPage = () => {
     }
 
     const transactionData = {
-      items: cart,
-      customer: customer,
+      id: Date.now().toString(),
+      items: [...cart],
+      customer: selectedCustomer,
+      customerSearch: customerSearch,
       subtotal: calculateSubtotal(),
       discount: discount,
-      total: calculateTotal()
+      discountType: discountType,
+      total: calculateTotal(),
+      timestamp: new Date().toISOString(),
+      paymentMethod: paymentMethod
     };
 
     try {
-      const result = await salesService.holdTransaction(transactionData);
-      setHeldTransactions([...heldTransactions, result]);
+      const updatedHeld = [...heldTransactions, transactionData];
+      setHeldTransactions(updatedHeld);
+      
+      // Save to localStorage as backup
+      localStorage.setItem('heldTransactions', JSON.stringify(updatedHeld));
+      
       clearCart();
       alert('Transaction held successfully!');
     } catch (error) {
-      alert('Failed to hold transaction: ' + error.message);
+      console.error('Failed to hold transaction:', error);
+      alert('Failed to hold transaction');
     }
+  };
+
+  const loadHeldTransactions = () => {
+    try {
+      const saved = localStorage.getItem('heldTransactions');
+      if (saved) {
+        setHeldTransactions(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Failed to load held transactions:', error);
+    }
+  };
+
+  const loadHeldTransaction = (transaction) => {
+    setCart(transaction.items);
+    setSelectedCustomer(transaction.customer);
+    setCustomerSearch(transaction.customerSearch || '');
+    setDiscount(transaction.discount);
+    setDiscountType(transaction.discountType || 'percentage');
+    setPaymentMethod(transaction.paymentMethod || 'CASH');
+    
+    // Remove from held transactions
+    const updated = heldTransactions.filter(t => t.id !== transaction.id);
+    setHeldTransactions(updated);
+    localStorage.setItem('heldTransactions', JSON.stringify(updated));
+  };
+
+  const selectCustomer = (customer) => {
+    setSelectedCustomer(customer);
+    setCustomerSearch(customer.name);
+    setShowCustomerSearch(false);
+    setCustomers([]);
   };
 
   const ProductCard = ({ product }) => (
@@ -237,50 +352,62 @@ const SalesPOSPage = () => {
       onClick={() => addToCart(product)}
     >
       <div className="flex items-center justify-between mb-2">
-        <h3 className="font-medium text-gray-900 text-sm">{product.name}</h3>
-        <span className={`text-xs ${product.stock > 10 ? 'text-green-600' : 'text-red-600'}`}>
-          Stock: {product.stock}
+        <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{product.name}</h3>
+        <span className={`text-xs px-2 py-1 rounded-full ${
+          (product.quantity || 0) > 10 
+            ? 'bg-green-100 text-green-800' 
+            : (product.quantity || 0) > 0
+            ? 'bg-yellow-100 text-yellow-800'
+            : 'bg-red-100 text-red-800'
+        }`}>
+          Stock: {product.quantity || 0}
         </span>
       </div>
-      <p className="text-lg font-bold text-teal-600">₦{product.price.toLocaleString()}</p>
-      <p className="text-xs text-gray-500 mt-1">{product.barcode}</p>
-      <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-        {product.category}
-      </span>
+      <p className="text-lg font-bold text-teal-600">
+        ₦{(product.salePrice || 0).toLocaleString()}
+      </p>
+      <p className="text-xs text-gray-500 mt-1">{product.sku}</p>
+      {product.category && (
+        <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+          {typeof product.category === 'object' ? product.category.name : product.category}
+        </span>
+      )}
     </div>
   );
 
   const CartItem = ({ item }) => (
     <div className="flex items-center justify-between py-3 border-b border-gray-100">
-      <div className="flex-1">
-        <h4 className="font-medium text-sm text-gray-900">{item.name}</h4>
-        <p className="text-xs text-gray-500">₦{item.price.toLocaleString()} each</p>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-medium text-sm text-gray-900 truncate">{item.name}</h4>
+        <p className="text-xs text-gray-500">₦{(item.unitPrice || 0).toLocaleString()} each</p>
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 mx-3">
         <button 
-          onClick={() => updateQuantity(item._id, item.quantity - 1)}
+          onClick={() => updateQuantity(item._id, item.cartQuantity - 1)}
           className="p-1 rounded-full hover:bg-gray-100"
         >
           <Minus className="w-3 h-3" />
         </button>
         <span className="px-2 py-1 bg-gray-100 rounded text-sm min-w-[2rem] text-center">
-          {item.quantity}
+          {item.cartQuantity}
         </span>
         <button 
-          onClick={() => updateQuantity(item._id, item.quantity + 1)}
+          onClick={() => updateQuantity(item._id, item.cartQuantity + 1)}
           className="p-1 rounded-full hover:bg-gray-100"
         >
           <Plus className="w-3 h-3" />
         </button>
         <button 
           onClick={() => removeFromCart(item._id)}
-          className="p-1 rounded-full hover:bg-red-100 text-red-600 ml-2"
+          className="p-1 rounded-full hover:bg-red-100 text-red-600"
         >
           <Trash2 className="w-3 h-3" />
         </button>
       </div>
-      <div className="text-right ml-4">
-        <p className="font-medium">₦{(item.price * item.quantity).toLocaleString()}</p>
+      <div className="text-right">
+        <p className="font-medium text-sm">
+          ₦{((item.unitPrice || 0) * item.cartQuantity).toLocaleString()}
+        </p>
       </div>
     </div>
   );
@@ -296,26 +423,57 @@ const SalesPOSPage = () => {
               <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search products or scan barcode..."
+                placeholder="Search products by name, SKU, or barcode..."
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+            <button 
+              onClick={fetchProducts}
+              className="p-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
+              title="Refresh Products"
+            >
+              <RefreshCw className="w-5 h-5" />
+            </button>
             <button className="p-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
               <Scan className="w-5 h-5" />
             </button>
           </div>
+          
+          {error && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center">
+              <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
+              <span className="text-red-700 text-sm">{error}</span>
+            </div>
+          )}
+
+          {lastSaleInfo && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center">
+                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                <div className="text-sm">
+                  <span className="font-medium text-green-800">Last Sale: {lastSaleInfo.invoiceNumber}</span>
+                  <span className="text-green-600 ml-2">
+                    ₦{lastSaleInfo.total.toLocaleString()} | {lastSaleInfo.customer}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Products Grid */}
         <div className="flex-1 p-4 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading products...</p>
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredProducts.map(product => (
                 <ProductCard key={product._id} product={product} />
               ))}
@@ -350,19 +508,61 @@ const SalesPOSPage = () => {
           </div>
         </div>
 
-        {/* Customer Info */}
+        {/* Customer Search */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center space-x-2 mb-2">
             <User className="w-4 h-4 text-gray-400" />
             <label className="text-sm font-medium text-gray-700">Customer</label>
           </div>
-          <input
-            type="text"
-            placeholder="Walk-in customer"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500"
-            value={customer}
-            onChange={(e) => setCustomer(e.target.value)}
-          />
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search customer or leave empty for walk-in"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-teal-500"
+              value={customerSearch}
+              onChange={(e) => {
+                setCustomerSearch(e.target.value);
+                setShowCustomerSearch(true);
+              }}
+              onFocus={() => setShowCustomerSearch(true)}
+            />
+            
+            {selectedCustomer && (
+              <div className="mt-2 p-2 bg-teal-50 border border-teal-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-teal-800">{selectedCustomer.name}</p>
+                    <p className="text-sm text-teal-600">{selectedCustomer.phone}</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setSelectedCustomer(null);
+                      setCustomerSearch('');
+                    }}
+                    className="text-teal-600 hover:text-teal-800"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Customer Search Results */}
+            {showCustomerSearch && customers.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                {customers.map(customer => (
+                  <button
+                    key={customer._id}
+                    onClick={() => selectCustomer(customer)}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="font-medium">{customer.name}</div>
+                    <div className="text-sm text-gray-500">{customer.phone}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Cart Items */}
@@ -390,16 +590,27 @@ const SalesPOSPage = () => {
               <div className="flex items-center justify-between mb-2">
                 <label className="text-sm font-medium text-gray-700 flex items-center">
                   <Percent className="w-4 h-4 mr-1" />
-                  Discount %
+                  Discount
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                  value={discount}
-                  onChange={(e) => setDiscount(Number(e.target.value))}
-                />
+                <div className="flex items-center space-x-2">
+                  <select
+                    value={discountType}
+                    onChange={(e) => setDiscountType(e.target.value)}
+                    className="px-2 py-1 border border-gray-300 rounded text-xs"
+                  >
+                    <option value="percentage">%</option>
+                    <option value="fixed">₦</option>
+                  </select>
+                  <input
+                    type="number"
+                    min="0"
+                    max={discountType === 'percentage' ? "100" : undefined}
+                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                    value={discount}
+                    onChange={(e) => setDiscount(Number(e.target.value))}
+                    placeholder="0"
+                  />
+                </div>
               </div>
             </div>
 
@@ -411,7 +622,7 @@ const SalesPOSPage = () => {
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-sm text-red-600">
-                  <span>Discount ({discount}%):</span>
+                  <span>Discount ({discountType === 'percentage' ? discount + '%' : '₦' + discount}):</span>
                   <span>-₦{calculateDiscountAmount().toLocaleString()}</span>
                 </div>
               )}
@@ -426,22 +637,22 @@ const SalesPOSPage = () => {
               <label className="text-sm font-medium text-gray-700 mb-2 block">Payment Method</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => setPaymentMethod('cash')}
+                  onClick={() => setPaymentMethod('CASH')}
                   className={`p-2 rounded-lg border text-sm flex items-center justify-center ${
-                    paymentMethod === 'cash' 
+                    paymentMethod === 'CASH' 
                       ? 'bg-teal-100 border-teal-600 text-teal-700' 
-                      : 'border-gray-300'
+                      : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   <DollarSign className="w-4 h-4 mr-1" />
                   Cash
                 </button>
                 <button
-                  onClick={() => setPaymentMethod('card')}
+                  onClick={() => setPaymentMethod('CARD')}
                   className={`p-2 rounded-lg border text-sm flex items-center justify-center ${
-                    paymentMethod === 'card' 
+                    paymentMethod === 'CARD' 
                       ? 'bg-teal-100 border-teal-600 text-teal-700' 
-                      : 'border-gray-300'
+                      : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   <CreditCard className="w-4 h-4 mr-1" />
@@ -451,7 +662,7 @@ const SalesPOSPage = () => {
             </div>
 
             {/* Cash Payment Amount */}
-            {paymentMethod === 'cash' && (
+            {paymentMethod === 'CASH' && (
               <div className="mb-4">
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Amount Paid</label>
                 <input
@@ -462,7 +673,8 @@ const SalesPOSPage = () => {
                   onChange={(e) => setAmountPaid(Number(e.target.value))}
                 />
                 {amountPaid >= calculateTotal() && (
-                  <p className="text-sm text-green-600 mt-1">
+                  <p className="text-sm text-green-600 mt-1 flex items-center">
+                    <CheckCircle className="w-4 h-4 mr-1" />
                     Change: ₦{calculateChange().toLocaleString()}
                   </p>
                 )}
@@ -473,15 +685,17 @@ const SalesPOSPage = () => {
             <div className="space-y-2">
               <button 
                 onClick={processSale}
-                disabled={processing || (paymentMethod === 'cash' && amountPaid < calculateTotal())}
-                className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={processing || (paymentMethod === 'CASH' && amountPaid < calculateTotal())}
+                className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Receipt className="w-4 h-4 mr-2" />
                 {processing ? 'Processing...' : 'Process Sale'}
               </button>
+              
               <button 
                 onClick={holdTransaction}
-                className="w-full bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center"
+                className="w-full bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 flex items-center justify-center transition-colors"
+                disabled={processing}
               >
                 <Save className="w-4 h-4 mr-2" />
                 Hold Transaction
@@ -491,12 +705,30 @@ const SalesPOSPage = () => {
             {/* Held Transactions */}
             {heldTransactions.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-200">
-                <p className="text-xs text-gray-500 mb-2">
-                  Held Transactions: {heldTransactions.length}
-                </p>
-                <button className="text-xs text-teal-600 hover:text-teal-700">
-                  View Held Transactions
-                </button>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-gray-700 flex items-center">
+                    <Clock className="w-4 h-4 mr-1" />
+                    Held Transactions: {heldTransactions.length}
+                  </p>
+                </div>
+                
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {heldTransactions.map(transaction => (
+                    <button
+                      key={transaction.id}
+                      onClick={() => loadHeldTransaction(transaction)}
+                      className="w-full text-left p-2 bg-yellow-50 border border-yellow-200 rounded text-xs hover:bg-yellow-100"
+                    >
+                      <div className="flex justify-between">
+                        <span>{transaction.customer?.name || 'Walk-in'}</span>
+                        <span>₦{transaction.total.toLocaleString()}</span>
+                      </div>
+                      <div className="text-gray-500">
+                        {transaction.items.length} items • {new Date(transaction.timestamp).toLocaleTimeString()}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>

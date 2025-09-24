@@ -5,19 +5,20 @@ const productSchema = new Schema({
   sku: { type: String, required: true, unique: true, trim: true }, // Stock Keeping Unit
   name: { type: String, required: true, trim: true, index: true },
   barcode: { type: String, trim: true, sparse: true, index: true },
-  category: { type: Schema.Types.ObjectId, ref: 'Category' },
-  brand: { type: String, trim: true },
-  unit: { type: String, default: 'pcs' }, // pcs, box, kg, ...
+  category: { type: Schema.Types.ObjectId, ref: 'Category'},
+  vendor: { type: Schema.Types.ObjectId, ref: 'Vendor' },
+  unit: { type: String, default: 'pcs' }, // pcs, box, kg,..
   costPrice: { type: Number, required: true, min: 0 },
   salePrice: { type: Number, required: true, min: 0 },
-  taxRate: { type: Number, default: 0 }, // %
   expiryTracking: { type: Boolean, default: false }, 
   reorderLevel: { type: Number, default: 0, min: 0 }, //low stock alert
   isActive: { type: Boolean, default: true },
-  description: String
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  description: String,
+  quantity: { type: Number, default: 0, min: 0 }
 }, { timestamps: true });
 
-productSchema.index({ name: 'text', sku: 'text', brand: 'text' });
+productSchema.index({ name: 'text', sku: 'text', category: 'text' });
 productSchema.index({ category: 1 });
 productSchema.index({ isActive: 1 });
 

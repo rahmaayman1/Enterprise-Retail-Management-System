@@ -2,7 +2,7 @@
 import apiClient from './api';
 
 export const authService = {
-  // تسجيل الدخول
+  
   login: async (email, password) => {
     return apiClient.request('/auth/login', {
       method: 'POST',
@@ -10,7 +10,7 @@ export const authService = {
     });
   },
 
-  // تسجيل مستخدم جديد
+  
   register: async (userData) => {
     return apiClient.request('/auth/register', {
       method: 'POST',
@@ -18,7 +18,7 @@ export const authService = {
     });
   },
 
-  // تسجيل الخروج
+  
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');

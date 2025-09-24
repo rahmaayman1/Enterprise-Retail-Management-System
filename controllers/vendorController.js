@@ -69,4 +69,14 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+// Get active vendors only
+const getActive = async (req, res) => {
+  try {
+    const vendors = await Vendor.find({ isActive: true });
+    res.json(vendors); // أو لو عايزة تعملي wrap: res.json({ vendors })
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getAll, getById, create, update, remove, getActive };

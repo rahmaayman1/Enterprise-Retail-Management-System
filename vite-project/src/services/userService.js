@@ -2,17 +2,17 @@
 import apiClient from './api';
 
 export const userService = {
-  // جلب كل المستخدمين
+  
   getAllUsers: async () => {
     return apiClient.request('/users');
   },
 
-  // جلب مستخدم بالـ ID
+  
   getUserById: async (id) => {
     return apiClient.request(`/users/${id}`);
   },
 
-  // إنشاء مستخدم جديد
+  
   createUser: async (userData) => {
     return apiClient.request('/users', {
       method: 'POST',
@@ -20,7 +20,7 @@ export const userService = {
     });
   },
 
-  // تحديث مستخدم
+  
   updateUser: async (id, userData) => {
     return apiClient.request(`/users/${id}`, {
       method: 'PUT',
@@ -28,7 +28,7 @@ export const userService = {
     });
   },
 
-  // حذف مستخدم
+  
   deleteUser: async (id) => {
     return apiClient.request(`/users/${id}`, {
       method: 'DELETE'

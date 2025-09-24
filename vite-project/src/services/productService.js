@@ -1,7 +1,9 @@
 // services/productService.js
 import apiClient from './api';
 
+
 export const productService = {
+
   getAllProducts: async () => {
     return apiClient.request('/products');
   },
@@ -11,6 +13,7 @@ export const productService = {
   },
 
   createProduct: async (productData) => {
+    console.log("Submitting product data:", productData);
     return apiClient.request('/products', {
       method: 'POST',
       body: JSON.stringify(productData)

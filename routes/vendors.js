@@ -16,6 +16,13 @@ router.get(
 );
 
 router.get(
+  '/active',
+  authenticateToken,
+  authorizeRoles('Admin', 'Manager', 'Accountant'),
+  vendorController.getActive
+);
+
+router.get(
   '/:id',
   authenticateToken,
   authorizeRoles('Admin', 'Manager', 'Accountant'),
@@ -23,6 +30,7 @@ router.get(
   validateRequest,
   vendorController.getById
 );
+
 
 router.post(
   '/',

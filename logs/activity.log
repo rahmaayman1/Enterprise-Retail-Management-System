@@ -48,3 +48,9 @@
 [2025-08-23T21:56:11.679Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required., name: Path `name` is required.
 [2025-08-23T21:56:35.010Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
 [2025-08-25T23:12:58.347Z] [ERROR]: Registration failed: User validation failed: passwordHash: Path `passwordHash` is required.
+[2025-09-23T06:39:49.379Z] [ERROR]: Get all users failed: Cannot populate path `branch` because it is not in your schema. Set the `strictPopulate` option to false to override.
+[2025-09-23T06:39:49.415Z] [ERROR]: Get all users failed: Cannot populate path `branch` because it is not in your schema. Set the `strictPopulate` option to false to override.
+[2025-09-23T06:39:50.894Z] [ERROR]: Get all users failed: Cannot populate path `branch` because it is not in your schema. Set the `strictPopulate` option to false to override.
+[2025-09-23T06:39:50.923Z] [ERROR]: Get all users failed: Cannot populate path `branch` because it is not in your schema. Set the `strictPopulate` option to false to override.
+[2025-09-23T06:39:52.428Z] [ERROR]: Get all users failed: Cannot populate path `branch` because it is not in your schema. Set the `strictPopulate` option to false to override.
+[2025-09-23T23:55:49.318Z] [INFO]: Vendor created: ABC Supplier by 68b26c81b71050fd5c77358a

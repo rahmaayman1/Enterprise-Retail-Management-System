@@ -8,7 +8,7 @@ const bcrypt=require("bcrypt");
 const getAll = async (req, res) => {
     try {
         const users = await User.find().select('-passwordHash');
-        res.json({ users });
+        res.json(users);
     } catch (error) {
         logger.error(`Get all users failed: ${error.message}`);
         res.status(500).json({ message: error.message });
@@ -20,7 +20,7 @@ const getById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-passwordHash');
         if (!user) return res.status(404).json({ message: 'User not found' });
-        res.json({ user });
+        res.json(user);
     } catch (error) {
         logger.error(`Get user by ID failed: ${error.message}`);
         res.status(500).json({ message: error.message });
