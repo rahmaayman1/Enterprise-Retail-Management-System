@@ -34,7 +34,7 @@ const SalesPOSPage = () => {
   const [customers, setCustomers] = useState([]);
   const [showCustomerSearch, setShowCustomerSearch] = useState(false);
   const [discount, setDiscount] = useState(0);
-  const [discountType, setDiscountType] = useState('percentage'); // percentage or fixed
+  const [discountType, setDiscountType] = useState('percentage'); 
   const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [amountPaid, setAmountPaid] = useState(0);
   const [products, setProducts] = useState([]);
@@ -197,26 +197,72 @@ const SalesPOSPage = () => {
       return;
     }
 
+    //check cart data integrity
+    console.log('=== CHECKING CART DATA ===');
+    for (let i = 0; i < cart.length; i++) {
+      const item = cart[i];
+      console.log(`Item ${i + 1}:`, {
+        id: item._id,
+        name: item.name,
+        quantity: item.quantity,
+        cartQuantity: item.cartQuantity,
+        unitPrice: item.unitPrice,
+        unitCost: item.unitCost || item.costPrice
+      });
+      
+      if (!item._id) {
+        alert(`Item ${i + 1}: Missing product ID`);
+        return;
+      }
+      if (!item.cartQuantity || item.cartQuantity <= 0) {
+        alert(`Item ${i + 1}: Invalid quantity`);
+        return;
+      }
+      if (!item.unitPrice || item.unitPrice <= 0) {
+        alert(`Item ${i + 1}: Invalid price`);
+        return;
+      }
+    }
+
+    
+    let branchId = null;
+    let userId = null;
+
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const currentBranch = JSON.parse(localStorage.getItem('currentBranch') || '{}');
+      
+      branchId = currentBranch._id || null;
+      userId = currentUser._id || null;
+      
+      console.log('User ID:', userId);
+      console.log('Branch ID:', branchId);
+    } catch (error) {
+      console.log('Could not get user/branch from localStorage, proceeding without them');
+    }
     const saleData = {
-      // Required fields based on schema
+
+      ...(branchId && { branch: branchId }),
+      ...(userId && { createdBy: userId }),
+      // Required fields 
       invoiceNo: generateInvoiceNumber(),
       customer: selectedCustomer?._id || null,
       date: new Date().toISOString(),
       
-      // Items array matching schema
+      // Items array 
       items: cart.map(item => ({
         product: item._id,
         qty: item.cartQuantity,
         unitPrice: item.unitPrice,
         unitCostAtSale: item.unitCost || item.costPrice,
-        discount: 0, // Item level discount if needed
-        taxRate: 0   // Item level tax if needed
+        discount: 0,
+        taxRate: 0
       })),
 
       // Totals
       subTotal: calculateSubtotal(),
       discountTotal: calculateDiscountAmount(),
-      taxTotal: 0, // Add tax calculation if needed
+      taxTotal: 0,
       shipping: 0,
       grandTotal: calculateTotal(),
 
@@ -225,12 +271,11 @@ const SalesPOSPage = () => {
       paymentStatus: 'PAID',
       status: 'POSTED',
 
-      // Additional data for frontend use
-      amountPaid: amountPaid,
-      change: calculateChange(),
-      discountPercentage: discountType === 'percentage' ? discount : 0,
-      discountFixed: discountType === 'fixed' ? discount : 0
+      // Notes if needed
+      notes: ''
     };
+
+    console.log('Sale Data being sent:', saleData); 
 
     try {
       setProcessing(true);
@@ -279,7 +324,6 @@ const SalesPOSPage = () => {
       setProcessing(false);
     }
   };
-
   const holdTransaction = async () => {
     if (cart.length === 0) {
       alert('Cart is empty!');

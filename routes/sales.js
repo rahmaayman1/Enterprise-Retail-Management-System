@@ -16,6 +16,14 @@ router.get(
 );
 
 router.get(
+  '/today',
+  authenticateToken,
+  authorizeRoles('Admin', 'Manager', 'Cashier'),
+  saleController.getTodaySales
+);
+
+
+router.get(
   '/:id',
   authenticateToken,
   authorizeRoles('Admin', 'Manager', 'Cashier'),
@@ -30,13 +38,15 @@ router.post(
   authorizeRoles('Admin', 'Manager', 'Cashier'),
   [
     body('items').isArray({ min: 1 }).withMessage('items must be a non-empty array'),
-    body('items.*.productId').isMongoId().withMessage('productId is required'),
-    body('items.*.quantity').isInt({ min: 1 }).withMessage('quantity must be >= 1'),
-    body('paymentMethod').isIn(['cash', 'card', 'digital']).withMessage('Invalid paymentMethod'),
+    body('items.*.product').isMongoId().withMessage('product is required'),
+    body('items.*.qty').isInt({ min: 1 }).withMessage('qty must be >= 1'),
+    body('items.*.unitPrice').isNumeric().withMessage('unitPrice is required'),
+    body('paymentMethod').isIn(['CASH', 'CARD', 'TRANSFER', 'MIXED']).withMessage('Invalid paymentMethod'),
   ],
   validateRequest,
   saleController.create
 );
+
 
 router.put(
   '/:id',
@@ -49,6 +59,8 @@ router.put(
   validateRequest,
   saleController.update
 );
+
+
 
 router.delete(
   '/:id',

@@ -29,11 +29,11 @@ router.post(
   authenticateToken,
   authorizeRoles('Admin', 'Manager'),
   [
-    body('vendorId').isMongoId().withMessage('vendorId is required'),
+    body('vendor').isMongoId().withMessage('vendorId is required'),
     body('items').isArray({ min: 1 }).withMessage('items must be a non-empty array'),
-    body('items.*.productId').isMongoId().withMessage('productId is required'),
-    body('items.*.quantity').isInt({ min: 1 }).withMessage('quantity must be >= 1'),
-    body('items.*.unitPrice').isFloat({ gt: 0 }).withMessage('unitPrice must be > 0'),
+    body('items.*.product').isMongoId().withMessage('productId is required'),
+    body('items.*.qty').isInt({ min: 1 }).withMessage('quantity must be >= 1'),
+    body('items.*.unitCost').isFloat({ gt: 0 }).withMessage('unitPrice must be > 0'),
   ],
   validateRequest,
   purchaseController.create

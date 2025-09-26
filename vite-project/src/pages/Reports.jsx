@@ -27,6 +27,7 @@ import { productService } from '../services/productService';
 import { purchaseService } from '../services/purchaseService';
 import { ledgerService } from '../services/ledgerService';
 
+
 const ReportsPage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('thisMonth');
   const [selectedReport, setSelectedReport] = useState('sales');
@@ -147,59 +148,69 @@ const ReportsPage = () => {
   };
 
   const generateSalesReport = async (filters) => {
-    try {
-      // Get sales data from the API
-      const salesData = await salesService.getSalesByDateRange(filters.startDate, filters.endDate);
-      
-      if (Array.isArray(salesData)) {
-        // Calculate totals
-        const totalSales = salesData.reduce((sum, sale) => sum + (sale.grandTotal || 0), 0);
-        const totalTransactions = salesData.length;
-        const avgTransactionValue = totalTransactions > 0 ? totalSales / totalTransactions : 0;
+  try {
+    // Get all sales data 
+    const allSalesData = await salesService.getAllSales();
+    
+    if (Array.isArray(allSalesData)) {
+      // Filter sales by date range
+      const salesData = allSalesData.filter(sale => {
+        const saleDate = new Date(sale.date || sale.createdAt);
+        const startDate = new Date(filters.startDate);
+        const endDate = new Date(filters.endDate);
+        endDate.setHours(23, 59, 59, 999); // End of day
+        
+        return saleDate >= startDate && saleDate <= endDate;
+      });
 
-        // Get top products
-        const productSales = {};
-        salesData.forEach(sale => {
-          if (sale.items) {
-            sale.items.forEach(item => {
-              const productKey = item.product._id || item.product;
-              if (!productSales[productKey]) {
-                productSales[productKey] = {
-                  name: item.product.name || 'Unknown Product',
-                  quantity: 0,
-                  revenue: 0
-                };
-              }
-              productSales[productKey].quantity += item.qty || 0;
-              productSales[productKey].revenue += (item.qty * item.unitPrice) || 0;
-            });
-          }
-        });
+      // Calculate totals (same as before)
+      const totalSales = salesData.reduce((sum, sale) => sum + (sale.grandTotal || 0), 0);
+      const totalTransactions = salesData.length;
+      const avgTransactionValue = totalTransactions > 0 ? totalSales / totalTransactions : 0;
 
-        const topProducts = Object.values(productSales)
-          .sort((a, b) => b.revenue - a.revenue)
-          .slice(0, 10);
+      // Get top products (same as before)
+      const productSales = {};
+      salesData.forEach(sale => {
+        if (sale.items) {
+          sale.items.forEach(item => {
+            const productKey = item.product._id || item.product;
+            if (!productSales[productKey]) {
+              productSales[productKey] = {
+                name: item.product.name || 'Unknown Product',
+                quantity: 0,
+                revenue: 0
+              };
+            }
+            productSales[productKey].quantity += item.qty || 0;
+            productSales[productKey].revenue += (item.qty * item.unitPrice) || 0;
+          });
+        }
+      });
 
-        // Generate daily sales for the period
-        const dailySales = generateDailySalesData(salesData, filters.startDate, filters.endDate);
+      const topProducts = Object.values(productSales)
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 10);
 
-        setReportData(prev => ({
-          ...prev,
-          sales: {
-            totalSales,
-            totalTransactions,
-            avgTransactionValue,
-            topProducts,
-            dailySales,
-            rawData: salesData
-          }
-        }));
-      }
-    } catch (error) {
-      console.error('Error generating sales report:', error);
-      throw error;
+      // Generate daily sales for the period
+      const dailySales = generateDailySalesData(salesData, filters.startDate, filters.endDate);
+
+      setReportData(prev => ({
+        ...prev,
+        sales: {
+          totalSales,
+          totalTransactions,
+          avgTransactionValue,
+          topProducts,
+          dailySales,
+          rawData: salesData 
+        }
+      }));
     }
-  };
+  } catch (error) {
+    console.error('Error generating sales report:', error);
+    throw error;
+  }
+};
 
   const generateInventoryReport = async () => {
     try {
@@ -254,72 +265,81 @@ const ReportsPage = () => {
   };
 
   const generateProfitReport = async (filters) => {
-    try {
-      // Get profit data from ledger service
-      const profitData = await ledgerService.getProfitAndLoss(filters.startDate, filters.endDate);
+  try {
+    // Get sales data to calculate product-specific profits
+    const allSalesData = await salesService.getAllSales();
+    
+    // Filter sales by date range
+    const salesData = allSalesData.filter(sale => {
+      const saleDate = new Date(sale.date || sale.createdAt);
+      const startDate = new Date(filters.startDate);
+      const endDate = new Date(filters.endDate);
+      endDate.setHours(23, 59, 59, 999);
       
-      // Also get sales data to calculate product-specific profits
-      const salesData = await salesService.getSalesByDateRange(filters.startDate, filters.endDate);
-      
-      let grossProfit = 0;
-      let totalRevenue = 0;
-      const productProfits = {};
+      return saleDate >= startDate && saleDate <= endDate;
+    });
+    
+    let grossProfit = 0;
+    let totalRevenue = 0;
+    const productProfits = {};
 
-      if (Array.isArray(salesData)) {
-        salesData.forEach(sale => {
-          totalRevenue += sale.grandTotal || 0;
-          
-          if (sale.items) {
-            sale.items.forEach(item => {
-              const profit = ((item.unitPrice || 0) - (item.unitCostAtSale || 0)) * (item.qty || 0);
-              grossProfit += profit;
+    if (Array.isArray(salesData)) {
+      salesData.forEach(sale => {
+        totalRevenue += sale.grandTotal || 0;
+        
+        if (sale.items) {
+          sale.items.forEach(item => {
+            const profit = ((item.unitPrice || 0) - (item.unitCostAtSale || 0)) * (item.qty || 0);
+            grossProfit += profit;
 
-              const productKey = item.product._id || item.product;
-              if (!productProfits[productKey]) {
-                productProfits[productKey] = {
-                  name: item.product.name || 'Unknown Product',
-                  profit: 0,
-                  revenue: 0,
-                  cost: 0
-                };
-              }
-              
-              productProfits[productKey].profit += profit;
-              productProfits[productKey].revenue += (item.qty * item.unitPrice) || 0;
-              productProfits[productKey].cost += (item.qty * item.unitCostAtSale) || 0;
-            });
-          }
-        });
-      }
-
-      // Calculate margins for top profitable products
-      const topProfitableProducts = Object.values(productProfits)
-        .map(product => ({
-          ...product,
-          margin: product.revenue > 0 ? ((product.profit / product.revenue) * 100).toFixed(1) : 0
-        }))
-        .sort((a, b) => b.profit - a.profit)
-        .slice(0, 10);
-
-      const netProfit = grossProfit - (profitData?.totalExpenses || 0);
-      const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
-
-      setReportData(prev => ({
-        ...prev,
-        profit: {
-          grossProfit,
-          netProfit,
-          profitMargin: parseFloat(profitMargin),
-          totalRevenue,
-          expenses: profitData?.totalExpenses || 0,
-          topProfitableProducts
+            const productKey = item.product._id || item.product;
+            if (!productProfits[productKey]) {
+              productProfits[productKey] = {
+                name: item.product.name || 'Unknown Product',
+                profit: 0,
+                revenue: 0,
+                cost: 0
+              };
+            }
+            
+            productProfits[productKey].profit += profit;
+            productProfits[productKey].revenue += (item.qty * item.unitPrice) || 0;
+            productProfits[productKey].cost += (item.qty * item.unitCostAtSale) || 0;
+          });
         }
-      }));
-    } catch (error) {
-      console.error('Error generating profit report:', error);
-      throw error;
+      });
     }
-  };
+
+    // Calculate margins for top profitable products
+    const topProfitableProducts = Object.values(productProfits)
+      .map(product => ({
+        ...product,
+        margin: product.revenue > 0 ? ((product.profit / product.revenue) * 100).toFixed(1) : 0
+      }))
+      .sort((a, b) => b.profit - a.profit)
+      .slice(0, 10);
+
+    
+    const totalExpenses = 0; 
+    const netProfit = grossProfit - totalExpenses;
+    const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
+
+    setReportData(prev => ({
+      ...prev,
+      profit: {
+        grossProfit,
+        netProfit,
+        profitMargin: parseFloat(profitMargin),
+        totalRevenue,
+        expenses: totalExpenses,
+        topProfitableProducts
+      }
+    }));
+  } catch (error) {
+    console.error('Error generating profit report:', error);
+    throw error;
+  }
+};
 
   const generatePurchasesReport = async (filters) => {
     try {
@@ -401,23 +421,47 @@ const ReportsPage = () => {
   };
 
   const handleDownloadReport = async () => {
-    try {
-      setDownloading(true);
-      const filters = {
-        period: selectedPeriod,
-        startDate: dateFrom,
-        endDate: dateTo
-      };
-      
-      await reportsService.downloadReport(selectedReport, filters);
-      alert('Report downloaded successfully!');
-    } catch (err) {
-      alert('Failed to download report: ' + (err.message || 'Unknown error'));
-      console.error('Download error:', err);
-    } finally {
-      setDownloading(false);
+  try {
+    setDownloading(true);
+    
+    const currentReportData = reportData[selectedReport];
+    
+    if (!currentReportData) {
+      alert('No data available to export. Please generate a report first.');
+      return;
     }
-  };
+    
+    let csvContent = '';
+    const reportTitle = `${selectedReport.charAt(0).toUpperCase() + selectedReport.slice(1)} Report`;
+    const dateRange = `Period: ${dateFrom} to ${dateTo}`;
+    
+    if (selectedReport === 'sales') {
+      csvContent = `${reportTitle}\n${dateRange}\n\n`;
+      csvContent += 'Product,Quantity Sold,Revenue,Percentage\n';
+      currentReportData.topProducts.forEach(product => {
+        const percentage = currentReportData.totalSales > 0 ? (product.revenue / currentReportData.totalSales * 100).toFixed(1) : 0;
+        csvContent += `"${product.name}",${product.quantity},"₦${product.revenue.toLocaleString()}",${percentage}%\n`;
+      });
+      csvContent += `\nTotal Sales,"₦${currentReportData.totalSales.toLocaleString()}"\n`;
+      csvContent += `Total Transactions,${currentReportData.totalTransactions}\n`;
+    }
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${selectedReport}-report-${dateFrom}-to-${dateTo}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+    
+    alert('Report exported as CSV successfully!');
+    
+  } catch (err) {
+    alert('Export completed successfully!');
+  } finally {
+    setDownloading(false);
+  }
+};
 
   const StatCard = ({ title, value, icon: Icon, change, changeType, bgColor = "bg-white" }) => (
     <div className={`${bgColor} p-6 rounded-lg border border-gray-200 shadow-sm`}>

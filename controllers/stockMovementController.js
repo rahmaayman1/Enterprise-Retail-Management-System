@@ -28,28 +28,34 @@ const getById = async (req, res) => {
 // create stockMovement(IN/OUT)
 const create = async (req, res) => {
   try {
-    const { productId, type, quantity, notes } = req.body;
+    const { product, direction, qty, reason, notes } = req.body;
 
-    const product = await Product.findById(productId);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    const dbProduct = await Product.findById(product);
+    if (!dbProduct) return res.status(404).json({ message: 'Product not found' });
 
-    if (type === 'IN') {
-      product.stock += quantity;
-    } else if (type === 'OUT') {
-      if (product.stock < quantity) {
+    const beforeQty = dbProduct.stock;
+
+    if (direction === 'IN') {
+      dbProduct.stock += qty;
+    } else if (direction === 'OUT') {
+      if (dbProduct.stock < qty) {
         return res.status(400).json({ message: 'Insufficient stock for this OUT movement' });
       }
-      product.stock -= quantity;
+      dbProduct.stock -= qty;
     }
 
-    await product.save();
+    await dbProduct.save();
 
     const movement = new StockMovement({
-      productId,
-      type,
-      quantity,
+      product,
+      direction,
+      reason,
+      qty,
       notes,
-      createdBy: req.user.id
+      beforeQty,
+      afterQty: Number(dbProduct.stock) || 0,
+      branch: branch || null,
+      createdBy: req.user ? req.user.id : null
     });
 
     const savedMovement = await movement.save();
@@ -66,11 +72,11 @@ const update = async (req, res) => {
     const movement = await StockMovement.findById(req.params.id);
     if (!movement) return res.status(404).json({ message: 'Movement not found' });
 
-    if (quantity && quantity !== movement.quantity) {
-      const product = await Product.findById(movement.productId);
+    if (quantity && quantity !== movement.qty) {
+      const product = await Product.findById(movement.product);
       if (!product) return res.status(404).json({ message: 'Product not found' });
 
-      const diff = quantity - movement.quantity;
+      const diff = quantity - movement.qty;
 
       if (movement.type === 'IN') {
         product.stock += diff;
@@ -81,7 +87,7 @@ const update = async (req, res) => {
         product.stock -= diff;
       }
       await product.save();
-      movement.quantity = quantity;
+      movement.qty = quantity;
     }
 
     if (notes) movement.notes = notes;
@@ -99,16 +105,16 @@ const remove = async (req, res) => {
     const movement = await StockMovement.findById(req.params.id);
     if (!movement) return res.status(404).json({ message: 'Movement not found' });
 
-    const product = await Product.findById(movement.productId);
+    const product = await Product.findById(movement.product);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
     if (movement.type === 'IN') {
-      if (product.stock < movement.quantity) {
+      if (product.stock < movement.qty) {
         return res.status(400).json({ message: 'Cannot delete IN movement, stock too low' });
       }
-      product.stock -= movement.quantity;
+      product.stock -= movement.qty;
     } else if (movement.type === 'OUT') {
-      product.stock += movement.quantity;
+      product.stock += movement.qty;
     }
 
     await product.save();

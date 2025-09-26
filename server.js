@@ -25,6 +25,8 @@ const salesRoutes = require('./routes/sales');
 const stockMovementsRoutes = require('./routes/stockMovements');
 const usersRoutes = require('./routes/users');
 const vendorsRoutes = require('./routes/vendors');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+
 
 //Link routes to its paths
 app.use('/api/auth', authRoutes);
@@ -39,6 +41,9 @@ app.use('/api/sales', salesRoutes);
 app.use('/api/stock-movements', stockMovementsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/vendors', vendorsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+
+//server listening
 
 
 

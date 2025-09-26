@@ -11,7 +11,7 @@ const saleItemSchema = new Schema({
 }, { _id: false });
 
 const saleSchema = new Schema({
-  branch: { type: Schema.Types.ObjectId, ref: 'Branch', required: true },
+  branch: { type: Schema.Types.ObjectId, ref: 'Branch'},
   customer: { type: Schema.Types.ObjectId, ref: 'Customer' },
   invoiceNo: { type: String, required: true, trim: true },
   date: { type: Date, default: Date.now },
@@ -32,7 +32,7 @@ const saleSchema = new Schema({
   notes: String
 }, { timestamps: true });
 
-saleSchema.index({ branch: 1, invoiceNo: 1 }, { unique: true });
+saleSchema.index({invoiceNo: 1 }, { unique: true });
 saleSchema.index({ date: -1 });
 saleSchema.index({ 'items.product': 1 });
 saleSchema.index({ customer: 1 });

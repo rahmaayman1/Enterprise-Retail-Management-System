@@ -95,10 +95,6 @@ const Dashboard = ({ onNavigate }) => {
         const stats = statsData.value;
         setDashboardStats(prevStats => ({
           ...prevStats,
-          todaySales: { 
-            value: `₦${stats.todaySalesAmount?.toLocaleString() || '0.00'}`,
-            count: stats.todaySalesCount || 0
-          },
           todayInvoice: { value: stats.todayInvoicesCount || 0 },
           currentMonthSales: { 
             value: `₦${stats.currentMonthSales?.toLocaleString() || '0.00'}`
@@ -112,6 +108,18 @@ const Dashboard = ({ onNavigate }) => {
           lowStockCount: { value: stats.lowStockCount || 0 }
         }));
       }
+
+      if (todaySalesData.status === 'fulfilled' && todaySalesData.value) {
+  const today = todaySalesData.value;
+  console.log('todaySalesData', todaySalesData);
+  setDashboardStats(prevStats => ({
+    ...prevStats,
+    todaySales: {
+      value: `₦${today.value?.toLocaleString() || '0.00'}`,
+      count: today.count || 0
+    }
+  }));
+}
 
       // Process products data
       if (productsData.status === 'fulfilled' && Array.isArray(productsData.value)) {
@@ -177,7 +185,7 @@ const Dashboard = ({ onNavigate }) => {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-medium opacity-90">{title}</h3>
-          <p className="text-2xl font-bold mt-1">{value}</p>
+          <p className="text-2xl font-bold mt-1 text-white">{value}</p>
           {trend && (
             <div className="flex items-center mt-2">
               {trend.direction === 'up' ? (
@@ -347,7 +355,7 @@ const Dashboard = ({ onNavigate }) => {
           isAlert={dashboardStats.lowStockCount.value > 0}
         />
         <SmallStatCard
-          label="Current Month Sales"
+          label="Current Sales"
           value={dashboardStats.currentMonthSales.value}
           icon={ShoppingBag}
           color="bg-purple-500"

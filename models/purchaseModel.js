@@ -12,7 +12,7 @@ const purchaseItemSchema = new Schema({
 }, { _id: false });
 
 const purchaseSchema = new Schema({
-  branch: { type: Schema.Types.ObjectId, ref: 'Branch', required: true },
+  branch: { type: Schema.Types.ObjectId, ref: 'Branch' },
   vendor: { type: Schema.Types.ObjectId, ref: 'Vendor', required: true },
   invoiceNo: { type: String, required: true, trim: true },
   date: { type: Date, default: Date.now },

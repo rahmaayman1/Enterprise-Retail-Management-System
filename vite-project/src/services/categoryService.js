@@ -37,6 +37,6 @@ export const categoryService = {
 
   
   getActiveCategories: async () => {
-    return apiClient.request('/categories/active');
+    return apiClient.request('/categories');
   }
 };

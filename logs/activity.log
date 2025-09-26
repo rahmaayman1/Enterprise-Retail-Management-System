@@ -54,3 +54,6 @@
 [2025-09-23T06:39:50.923Z] [ERROR]: Get all users failed: Cannot populate path `branch` because it is not in your schema. Set the `strictPopulate` option to false to override.
 [2025-09-23T06:39:52.428Z] [ERROR]: Get all users failed: Cannot populate path `branch` because it is not in your schema. Set the `strictPopulate` option to false to override.
 [2025-09-23T23:55:49.318Z] [INFO]: Vendor created: ABC Supplier by 68b26c81b71050fd5c77358a
+[2025-09-25T01:43:32.891Z] [INFO]: Vendor created: Samsung Gulf by 68b26c81b71050fd5c77358a
+[2025-09-25T01:44:17.627Z] [INFO]: Vendor created: Old Supplier LLC by 68b26c81b71050fd5c77358a
+[2025-09-25T01:45:25.860Z] [INFO]: Vendor created: ElectroHub by 68b26c81b71050fd5c77358a

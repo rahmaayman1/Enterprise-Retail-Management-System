@@ -1,4 +1,4 @@
-// services/stockMovementsService.js
+// services/stockMovementService.js
 import apiClient from './api';
 
 export const stockMovementsService = {
@@ -21,13 +21,4 @@ export const stockMovementsService = {
     });
   },
 
-  
-  getMovementsByProduct: async (productId) => {
-    return apiClient.request(`/stock-movements/product/${productId}`);
-  },
-
-  
-  getMovementsByDateRange: async (startDate, endDate) => {
-    return apiClient.request(`/stock-movements/date-range?start=${startDate}&end=${endDate}`);
-  }
 };

@@ -29,9 +29,9 @@ router.post(
   authenticateToken,
   authorizeRoles('Admin', 'Manager', 'Warehouse Staff'),
   [
-    body('productId').isMongoId().withMessage('productId is required'),
-    body('type').isIn(['IN', 'OUT']).withMessage('type must be IN or OUT'),
-    body('quantity').isInt({ min: 1 }).withMessage('quantity must be >= 1'),
+    body('product').isMongoId().withMessage('productId is required'),
+    body('direction').isIn(['IN', 'OUT']).withMessage('type must be IN or OUT'),
+    body('qty').isInt({ min: 1 }).withMessage('quantity must be >= 1'),
   ],
   validateRequest,
   stockMovementController.create

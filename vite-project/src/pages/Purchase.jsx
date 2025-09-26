@@ -284,9 +284,11 @@ const PurchasePage = () => {
       e.preventDefault();
       
       if (!validateForm()) return;
+      calculateTotals();
 
       const purchaseData = {
-        vendor: formData.vendor,
+        branch: formData.branch?._id || formData.branch,
+        vendor: formData.vendor?._id || formData.vendor,
         invoiceNo: formData.invoiceNo.trim(),
         date: new Date(formData.date).toISOString(),
         items: formData.items.map(item => ({
@@ -298,14 +300,32 @@ const PurchasePage = () => {
           batchNo: item.batchNo?.trim() || undefined,
           expiryDate: item.expiryDate || undefined
         })),
-        subTotal: Number(formData.subTotal),
-        discountTotal: Number(formData.discountTotal),
-        taxTotal: Number(formData.taxTotal),
-        shipping: Number(formData.shipping) || 0,
-        grandTotal: Number(formData.grandTotal),
-        paymentStatus: formData.paymentStatus,
-        notes: formData.notes?.trim() || undefined
+        subTotal: Number(formData.subTotal) || 0,
+    discountTotal: Number(formData.discountTotal) || 0,
+    taxTotal: Number(formData.taxTotal) || 0,
+    shipping: Number(formData.shipping) || 0,
+    grandTotal: Number(formData.grandTotal) || 0,
+    
+    paymentStatus: formData.paymentStatus || 'UNPAID',
+    notes: formData.notes?.trim() || undefined
       };
+      if (formData.branch) {
+    purchaseData.branch = formData.branch;
+  }
+        if (!purchaseData.invoiceNo) {
+    alert('Invoice number is required');
+    return;
+  }
+
+  if (!purchaseData.vendor) {
+    alert('Vendor is required');
+    return;
+  }
+
+  if (!purchaseData.items || purchaseData.items.length === 0) {
+    alert('At least one item is required');
+    return;
+  }
 
       try {
         setSubmitting(true);

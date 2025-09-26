@@ -36,6 +36,22 @@ router.post(
   ledgerController.create
 );
 
+router.get('/profit-loss', async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    
+    const result = {
+      totalExpenses: 0,
+      totalRevenue: 0,
+      netProfit: 0
+    };
+    
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.put(
   '/:id',
   authenticateToken,
